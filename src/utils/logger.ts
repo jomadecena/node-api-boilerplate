@@ -6,8 +6,8 @@ interface EventTag {
 	[key: string]: string
 }
 
-export const captureException = (e: any, message?: string) => {
-	console.error(message || "", e);
+export const captureException = (e: any, friendlyMessage?: string) => {
+	console.error(friendlyMessage || "", e);
 };
 
 export const captureEvent = (

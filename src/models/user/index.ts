@@ -55,4 +55,7 @@ User.init(
   }
 )
 
+export type IUser = InferAttributes<User>;
+export type ICreateUser = InferAttributes<User, {omit: 'id' | 'updated' | 'otp'}>;
+
 export default User;
