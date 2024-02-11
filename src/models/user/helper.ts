@@ -31,12 +31,27 @@ export const createUser = async(user: ICreateUser) => {
   }
 }
 
+export const updateUserById = async (id: string | number, newData: Partial<IUser>) => {
+  try {
+    const user = await userModel.findByPk(id);
+    if (!user) {
+      return null;
+    }
+    return await user.update(newData);
+  } catch (ex) {
+    const msg = `Unable to find user ${id}`;
+    captureException(ex, msg);
+    throw new Error(msg);
+  }
+}
+
+
 export const cleanseUserData = (user: IUser) => {
   return {
     id: user.id,
     firstName: user.firstName,
     lastName: user.lastName,
-    email: user.lastName,
+    email: user.email,
     created: user.created,
     updated: user.updated
   }

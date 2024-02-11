@@ -7,7 +7,7 @@ interface EventTag {
 }
 
 export const captureException = (e: any, friendlyMessage?: string) => {
-	console.error(friendlyMessage || "", e);
+	console.error(friendlyMessage ?? "", e.message ?? e);
 };
 
 export const captureEvent = (

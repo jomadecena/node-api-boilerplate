@@ -14,7 +14,7 @@ const getUserInfo = async (req: AuthenticatedRequest, res: Response) => {
     const { id } = req.user;
 
     if (!id) {
-      return res.sendStatus(401);
+      return res.sendStatus(401); 
     }
     
     const user = await findUserById(id);
@@ -23,7 +23,7 @@ const getUserInfo = async (req: AuthenticatedRequest, res: Response) => {
       return res.sendStatus(401);
     }
     
-    return cleanseUserData(user);
+    res.send(cleanseUserData(user));
   } catch (ex) {
     captureException(ex, "Unable to get user details");
     res.sendStatus(500);
@@ -73,7 +73,7 @@ const login = async (req: Request, res: Response) => {
     
     const response = await findUserByQuery({ email });
 
-    if ((!response || []).length === 0) {
+    if ((response || []).length === 0) {
       res.status(400).send({ message: "Incorrect email or password." });
       return;
     }
@@ -91,7 +91,7 @@ const login = async (req: Request, res: Response) => {
         );
         res.send({ token: token });
       } else {
-        res.send({ message: "Incorrect email or password." });
+        res.status(401).send({ message: "Incorrect email or password." });
       }
     });
   } catch (ex) {
@@ -101,8 +101,8 @@ const login = async (req: Request, res: Response) => {
 }
 
 // @ts-expect-error 
-router.get("/", authenticateToken, getUserInfo)
-router.post("/", create);
+router.get("", authenticateToken, getUserInfo)
+router.post("", create);
 router.post("/login", login);
 
 export default router;

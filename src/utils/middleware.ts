@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from 'jsonwebtoken';
-require('dotenv').config()
 
-import userModel from "../models/user";
+import { findUserByQuery } from "../models/user/helper";
+import { captureException } from "./logger";
 
 type MiddlewareRequest = Request & {
   token: string
@@ -28,20 +28,25 @@ export const extractToken = (req: MiddlewareRequest, res: Response, next: NextFu
 
 
 export const authenticateToken = async (req:any, res:any, next: any) => {
-  const authHeader = req.headers['authorization']
-  const token = authHeader && authHeader.split(' ')[1]
-  if(token == null) return res.sendStatus(401);
-  
-  const resp = await verifyJWT(token);
+  try {
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+    if(token == null) return res.sendStatus(401);
+    
+    const resp = await verifyJWT(token);
 
-  if (!resp.success) {
-    res.status(401).send({
-      message: "Unauthorized"
-    })
-    return;
-  } else {
-    req.user = resp.user;
-    next()
+    if (!resp.success) {
+      res.status(401).send({
+        message: "Unauthorized"
+      })
+      return;
+    } else {
+      req.user = resp.user;
+      next()
+    }
+  } catch (ex) {
+    captureException(ex, "Unable to authenticate token")
+    res.send(500);
   }
 }
 
@@ -56,15 +61,17 @@ const verifyJWT = async (token: string): Promise<{ success: boolean, user?: any 
             resolve({
               success: false
             });
+            return;
           }
           // @ts-ignore
-          const user = await userModel.findOne({ email: response.email });
-          if (!user) {
+          const data = await findUserByQuery({ email: response.email });
+          if ((data || []).length === 0) {
             resolve({
               success: false
             })
             return;
           }
+          const user = data[0];
           resolve({
             success: true,
             user: {
